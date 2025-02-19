@@ -38,6 +38,11 @@ struct command_line *parse_input()
 	fflush(stdout);
 	fgets(input, INPUT_LENGTH, stdin);
 
+	// If line begins with blank line or comment, it will be ignored and the shell will reprompt
+	if (input[0] == '\n' || input[0] == '#') {
+		return NULL;
+	}
+
 	// Tokenize the input
 	char *token = strtok(input, " \n");
 	while(token){
