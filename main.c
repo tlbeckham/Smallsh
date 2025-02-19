@@ -60,6 +60,25 @@ struct command_line *parse_input()
 	return curr_command;
 }
 
+
+void exit_command()
+{
+	printf("exit_command");
+}
+
+
+void cd_command()
+{
+	printf("cd_command");
+}
+
+void status_command()
+{
+	printf("status_command");
+}
+
+
+
 int main()
 {
 	struct command_line *curr_command;
@@ -67,6 +86,20 @@ int main()
 	while(true)
 	{
 		curr_command = parse_input();
+
+		if(strcmp(curr_command->argv[0], "exit") == 0){
+			exit_command();
+
+		}
+
+		else if(strcmp(curr_command->argv[0], "cd") == 0){
+			cd_command();
+
+		}
+
+		else if(strcmp(curr_command->argv[0], "status") == 0){
+			status_command();
+		}
 
 	}
 	return EXIT_SUCCESS;
