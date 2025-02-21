@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <unistd.h>
+
 #define INPUT_LENGTH 2048
 #define MAX_ARGS 512
 
@@ -67,9 +69,37 @@ void exit_command()
 }
 
 
-void cd_command()
+void cd_command(struct command_line *curr_command)
 {
-	printf("cd_command");
+	printf("executing cd_command\n");
+	
+	// char * getcwd (char *cwdbuf, size_t size );
+	// int chdir (const char *pathname);
+
+
+	printf("curr_command arg count: %d\n", curr_command->argc);
+
+	// with no arguments - it changes to the directory specified in the HOME environment variable
+	if(curr_command->argc == 1){
+		
+		// https://pubs.opengroup.org/onlinepubs/009696899/functions/getenv.html
+		const char *home_ev = "HOME";
+		char *home_directory;
+
+		home_directory = getenv(home_ev);
+
+		chdir(home_directory);
+		 
+	}
+
+	// This command can also take one argument: the path of a directory to change to. Your cd command 
+	// must support both absolute and relative paths.
+	else if(curr_command->argc == 2){
+
+		chdir(curr_command->argv[2]);
+		
+	}
+
 }
 
 void status_command()
@@ -93,7 +123,8 @@ int main()
 		}
 
 		else if(strcmp(curr_command->argv[0], "cd") == 0){
-			cd_command();
+
+			cd_command(curr_command);
 
 		}
 
