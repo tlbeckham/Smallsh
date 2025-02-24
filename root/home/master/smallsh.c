@@ -128,53 +128,6 @@ void other_commands(struct command_line *curr_command)
 	int childStatus;
 
 
-
-
-	// Source URL: Redirecting both Stdin and Stdout https://canvas.oregonstate.edu/courses/1987883/pages/exploration-processes-and-i-slash-o?module_item_id=24956228
-
-	if (curr_command->input_file){
-
-		  // Open the source file
-		  int sourceFD = open(curr_command->input_file, O_RDONLY);
-		  if (sourceFD == -1) { 
-			perror("source open()"); 
-			exit(1); 
-		  }
-
-		  // Write the file descriptor to stdout
-		  printf("File descriptor of input file = %d\n", sourceFD); 
-		
-		  // Redirect stdin to source file
-		  int result = dup2(sourceFD, 0);
-		  if (result == -1) { 
-			perror("source dup2()"); 
-			exit(2); 
-		  }
-
-	}
-
-	if (curr_command->output_file){
-
-		// Open target file
-		int targetFD = open(curr_command->output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-		if (targetFD == -1) { 
-			perror("target open()"); 
-			exit(1); 
-		}
-		
-		// Write the file descriptor to stdout
-		printf("File descriptor of output file = %d\n", targetFD);
-
-		// Redirect stdout to target file
-		int result = dup2(targetFD, 1);
-		if (result == -1) { 
-			perror("target dup2()"); 
-			exit(2); 
-		}
-
-  }
-
-
 	// Fork a new process
 	pid_t spawnPid = fork();
   
@@ -187,6 +140,51 @@ void other_commands(struct command_line *curr_command)
 		// The child process executes this branch
 		// printf("CHILD(%d) running command\n", getpid());
 
+
+		// Source URL: Redirecting both Stdin and Stdout https://canvas.oregonstate.edu/courses/1987883/pages/exploration-processes-and-i-slash-o?module_item_id=24956228
+
+		if (curr_command->input_file){
+
+			// Open the source file
+			int sourceFD = open(curr_command->input_file, O_RDONLY);
+			if (sourceFD == -1) { 
+			perror("source open()"); 
+			exit(1); 
+			}
+
+			// Write the file descriptor to stdout
+			// printf("File descriptor of input file = %d\n", sourceFD); 
+		
+			// Redirect stdin to source file
+			int result = dup2(sourceFD, 0);
+			if (result == -1) { 
+			perror("source dup2()"); 
+			exit(2); 
+			}
+
+		}
+
+		if (curr_command->output_file){
+
+			// Open target file
+			int targetFD = open(curr_command->output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+			if (targetFD == -1) { 
+				perror("target open()"); 
+				exit(1); 
+			}
+			
+			// Write the file descriptor to stdout
+			// printf("File descriptor of output file = %d\n", targetFD);
+
+			// Redirect stdout to target file
+			int result = dup2(targetFD, 1);
+			if (result == -1) { 
+				perror("target dup2()"); 
+				exit(2); 
+			}
+
+		}
+
 		// Replace the current program with "/bin/ls"
 		execvp(curr_command->argv[0], curr_command->argv);
 		
@@ -198,7 +196,7 @@ void other_commands(struct command_line *curr_command)
 		// The parent process executes this branch
 		// Wait for child's termination
 		spawnPid = waitpid(spawnPid, &childStatus, 0);
-		printf("PARENT(%d): child(%d) terminated\n", getpid(), spawnPid);
+		// printf("PARENT(%d): child(%d) terminated\n", getpid(), spawnPid);
 		// exit(0);
 		break;
 	} 
