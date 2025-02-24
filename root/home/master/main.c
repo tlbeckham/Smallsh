@@ -15,6 +15,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 
 #define INPUT_LENGTH 2048
 #define MAX_ARGS 512
@@ -67,7 +68,7 @@ struct command_line *parse_input()
 // has started before it terminates itself.
 void exit_command(struct command_line *curr_command)
 {
-	printf("exit_command");
+	printf("executing exit_command");
 	exit(0);
 
 }
@@ -106,9 +107,44 @@ void cd_command(struct command_line *curr_command)
 
 }
 
-void status_command()
+void status_command(struct command_line *curr_command)
 {
-	printf("status_command");
+	printf("executing status_command");
+}
+
+
+void other_commands(struct command_line *curr_command)
+{
+	printf("executing other_commands");
+
+	int childStatus;
+
+	// Fork a new process
+	pid_t spawnPid = fork();
+  
+	switch(spawnPid){
+	case -1:
+		perror("fork()\n");
+		exit(1);
+		break;
+	case 0:
+		// The child process executes this branch
+		printf("CHILD(%d) running command\n", getpid());
+		// Replace the current program with "/bin/ls"
+		execv(curr_command->argv[0], curr_command->argv);
+		// exec only returns if there is an error
+		perror("execve");
+		exit(2);
+		break;
+	default:
+		// The parent process executes this branch
+		// Wait for child's termination
+		spawnPid = waitpid(spawnPid, &childStatus, 0);
+		printf("PARENT(%d): child(%d) terminated. Now parent is exiting\n", getpid(), spawnPid);
+		exit(0);
+		break;
+	} 
+	
 }
 
 
@@ -134,7 +170,11 @@ int main()
 		}
 
 		else if(strcmp(curr_command->argv[0], "status") == 0){
-			status_command();
+			status_command(curr_command);
+		}
+		
+		else{
+			other_commands(curr_command); 
 		}
 
 	}
