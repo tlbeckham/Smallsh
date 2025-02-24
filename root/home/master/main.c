@@ -68,7 +68,7 @@ struct command_line *parse_input()
 // has started before it terminates itself.
 void exit_command(struct command_line *curr_command)
 {
-	printf("executing exit_command");
+	printf("executing exit_command\n");
 	exit(0);
 
 }
@@ -109,7 +109,7 @@ void cd_command(struct command_line *curr_command)
 
 void status_command(struct command_line *curr_command)
 {
-	printf("executing status_command");
+	printf("executing status_command\n");
 }
 
 
@@ -121,7 +121,7 @@ void status_command(struct command_line *curr_command)
 */
 void other_commands(struct command_line *curr_command)
 {
-	printf("executing other_commands");
+	printf("executing other_commands\n");
 
 	int childStatus;
 
@@ -147,7 +147,7 @@ void other_commands(struct command_line *curr_command)
 		// Wait for child's termination
 		spawnPid = waitpid(spawnPid, &childStatus, 0);
 		printf("PARENT(%d): child(%d) terminated. Now parent is exiting\n", getpid(), spawnPid);
-		exit(0);
+		// exit(0);
 		break;
 	} 
 	
