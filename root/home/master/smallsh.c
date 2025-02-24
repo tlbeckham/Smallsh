@@ -70,7 +70,7 @@ struct command_line *parse_input()
 // has started before it terminates itself.
 void exit_command(struct command_line *curr_command)
 {
-	printf("executing exit_command\n");
+	// printf("executing exit_command\n");
 	exit(0);
 
 }
@@ -78,13 +78,13 @@ void exit_command(struct command_line *curr_command)
 
 void cd_command(struct command_line *curr_command)
 {
-	printf("executing cd_command\n");
+	// printf("executing cd_command\n");
 	
 	// char * getcwd (char *cwdbuf, size_t size );
 	// int chdir (const char *pathname);
 
 
-	printf("curr_command arg count: %d\n", curr_command->argc);
+	// printf("curr_command arg count: %d\n", curr_command->argc);
 
 	// with no arguments - it changes to the directory specified in the HOME environment variable
 	if(curr_command->argc == 1){
@@ -111,7 +111,7 @@ void cd_command(struct command_line *curr_command)
 
 void status_command(struct command_line *curr_command)
 {
-	printf("executing status_command\n");
+	// printf("executing status_command\n");
 }
 
 
@@ -123,7 +123,7 @@ void status_command(struct command_line *curr_command)
 */
 void other_commands(struct command_line *curr_command)
 {
-	printf("executing other_commands\n");
+	// printf("executing other_commands\n");
 
 	int childStatus;
 
