@@ -101,7 +101,7 @@ void cd_command(struct command_line *curr_command)
 	// must support both absolute and relative paths.
 	else if(curr_command->argc == 2){
 
-		chdir(curr_command->argv[2]);
+		chdir(curr_command->argv[1]);
 		
 	}
 
@@ -113,6 +113,12 @@ void status_command(struct command_line *curr_command)
 }
 
 
+/*
+ * 
+ * Citation:
+ * Adapted from Using exec() with fork() in Module 6
+ * Source URL: https://canvas.oregonstate.edu/courses/1987883/pages/exploration-process-api-executing-a-new-program?module_item_id=24956220
+*/
 void other_commands(struct command_line *curr_command)
 {
 	printf("executing other_commands");
@@ -131,7 +137,7 @@ void other_commands(struct command_line *curr_command)
 		// The child process executes this branch
 		printf("CHILD(%d) running command\n", getpid());
 		// Replace the current program with "/bin/ls"
-		execv(curr_command->argv[0], curr_command->argv);
+		execvp(curr_command->argv[0], curr_command->argv);
 		// exec only returns if there is an error
 		perror("execve");
 		exit(2);
