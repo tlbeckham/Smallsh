@@ -44,15 +44,15 @@ struct command_line *parse_input()
 	fflush(stdout);
 	fgets(input, INPUT_LENGTH, stdin);
 
-	// If line begins with blank line or comment, it will be ignored and the shell will reprompt
-	// if (input[0] == '\n' || input[0] == '#') {
-	//	return NULL;
-	// }
 
 	// Tokenize the input
 	char *token = strtok(input, " \n");
+
 	while(token){
-		if(!strcmp(token,"<")){
+		if(!strcmp(token,"#")){
+			curr_command->argc = 0;
+			break;
+		} else if(!strcmp(token,"<")){
 			curr_command->input_file = strdup(strtok(NULL," \n"));
 		} else if(!strcmp(token,">")){
 			curr_command->output_file = strdup(strtok(NULL," \n"));
@@ -63,7 +63,24 @@ struct command_line *parse_input()
 		}
 		token=strtok(NULL," \n");
 	}
-	return curr_command;
+
+	// If line begins with blank line or comment, it will be ignored and the shell will reprompt
+	// if(strcmp(curr_command->argv[0], "#")){
+	// 	curr_command = NULL;
+	// }
+
+	// if(strcmp(token[0], "#")){
+	// 	curr_command = NULL;
+	// }
+
+	// if(curr_command->argc == 0){
+	// 	curr_command);
+	// 	return NULL;
+	// }
+
+	//else{
+		return curr_command;
+	
 }
 
 // shell must kill any other processes or jobs that your shell 
@@ -185,14 +202,14 @@ void other_commands(struct command_line *curr_command)
 
 		}
 
-		// Replace the current program with "/bin/ls"
 		execvp(curr_command->argv[0], curr_command->argv);
 		
-		// exec only returns if there is an error
-		perror("execvp");
-		exit(2);
-		break;
-	default:
+			// exec only returns if there is an error
+			perror("execvp");
+			exit(2);
+			break;
+		
+		default:
 		// The parent process executes this branch
 		// Wait for child's termination
 		spawnPid = waitpid(spawnPid, &childStatus, 0);
@@ -214,7 +231,11 @@ int main()
 	{
 		curr_command = parse_input();
 
-		if(strcmp(curr_command->argv[0], "exit") == 0){
+		if(curr_command->argc == 0){
+			continue;
+		}
+
+		else if(strcmp(curr_command->argv[0], "exit") == 0){
 			exit_command(curr_command);
 
 		}
