@@ -44,15 +44,22 @@ struct command_line *parse_input()
 	fflush(stdout);
 	fgets(input, INPUT_LENGTH, stdin);
 
+	if (input[0] == '#'){
+		curr_command->argc = 0;
+		return curr_command;
+	}
+
 
 	// Tokenize the input
 	char *token = strtok(input, " \n");
 
+	// if(token[0] && !strcmp(token,"#")){
+	// 	curr_command->argc = 0;
+	// 	return curr_command;
+	// }
+
 	while(token){
-		if(!strcmp(token,"#")){
-			curr_command->argc = 0;
-			break;
-		} else if(!strcmp(token,"<")){
+		if(!strcmp(token,"<")){
 			curr_command->input_file = strdup(strtok(NULL," \n"));
 		} else if(!strcmp(token,">")){
 			curr_command->output_file = strdup(strtok(NULL," \n"));
