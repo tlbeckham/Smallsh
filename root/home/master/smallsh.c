@@ -136,6 +136,11 @@ void cd_command(struct command_line *curr_command)
 void status_command(struct command_line *curr_command)
 {
 	// printf("executing status_command\n");
+
+	
+
+
+
 }
 
 
@@ -155,15 +160,17 @@ void other_commands(struct command_line *curr_command)
 	// Fork a new process
 	pid_t spawnPid = fork();
   
+	// both parent and child execute next instruction after fork
 	switch(spawnPid){
-	case -1:
+	
+		case -1:
 		perror("fork()\n");
 		exit(1);
 		break;
+
 	case 0:
 		// The child process executes this branch
 		// printf("CHILD(%d) running command\n", getpid());
-
 
 		// Source URL: Redirecting both Stdin and Stdout https://canvas.oregonstate.edu/courses/1987883/pages/exploration-processes-and-i-slash-o?module_item_id=24956228
 
@@ -172,8 +179,8 @@ void other_commands(struct command_line *curr_command)
 			// Open the source file
 			int sourceFD = open(curr_command->input_file, O_RDONLY);
 			if (sourceFD == -1) { 
-			perror("source open()"); 
-			exit(1); 
+				perror("source open()"); 
+				exit(1); 
 			}
 
 			// Write the file descriptor to stdout
@@ -182,10 +189,9 @@ void other_commands(struct command_line *curr_command)
 			// Redirect stdin to source file
 			int result = dup2(sourceFD, 0);
 			if (result == -1) { 
-			perror("source dup2()"); 
-			exit(2); 
+				perror("source dup2()"); 
+				exit(2); 
 			}
-
 		}
 
 		if (curr_command->output_file){
@@ -209,6 +215,14 @@ void other_commands(struct command_line *curr_command)
 
 		}
 
+		// If the user doesn't redirect the standard input for a background command, then standard input must be redirected to /dev/null.
+		// If the user doesn't redirect the standard output for a background command, then standard output must be redirected to /dev/null.
+		if (curr_command->is_bg){
+			
+			
+
+		}
+
 		execvp(curr_command->argv[0], curr_command->argv);
 		
 			// exec only returns if there is an error
@@ -216,12 +230,17 @@ void other_commands(struct command_line *curr_command)
 			exit(2);
 			break;
 		
-		default:
+	default:
 		// The parent process executes this branch
+		
 		// Wait for child's termination
-		spawnPid = waitpid(spawnPid, &childStatus, 0);
-		// printf("PARENT(%d): child(%d) terminated\n", getpid(), spawnPid);
-		// exit(0);
+		if (!curr_command->is_bg){
+			
+			spawnPid = waitpid(spawnPid, &childStatus, 0);
+
+		}
+
+		printf("background pid is %d/n", spawnPid);
 		break;
 	} 
 	
