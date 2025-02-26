@@ -172,8 +172,6 @@ void other_commands(struct command_line *curr_command)
 		// The child process executes this branch
 		// printf("CHILD(%d) running command\n", getpid());
 
-		printf("background pid is %d\n", getpid());
-
 		// Source URL: Redirecting both Stdin and Stdout https://canvas.oregonstate.edu/courses/1987883/pages/exploration-processes-and-i-slash-o?module_item_id=24956228
 
 		if (curr_command->input_file){
@@ -219,6 +217,8 @@ void other_commands(struct command_line *curr_command)
 
 		
 		if (curr_command->is_bg){
+
+			printf("background pid is %d\n", getpid());
 			
 			// If the user doesn't redirect the standard input for a background command, then standard input must be redirected to /dev/null.
 			int sourceFD = open("/dev/null", O_RDONLY);
@@ -252,10 +252,10 @@ void other_commands(struct command_line *curr_command)
 
 		execvp(curr_command->argv[0], curr_command->argv);
 		
-			// exec only returns if there is an error
-			perror("execvp");
-			exit(2);
-			break;
+		// exec only returns if there is an error
+		perror("execvp");
+		exit(2);
+		break;
 		
 	default:
 		// The parent process executes this branch
