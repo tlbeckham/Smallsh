@@ -133,13 +133,13 @@ void cd_command(struct command_line *curr_command)
 
 }
 
+int last_status = 0;
+
 void status_command(struct command_line *curr_command)
 {
 	// printf("executing status_command\n");
 
-	
-
-
+	printf("exit value %d\n", last_status);
 
 }
 
@@ -154,6 +154,8 @@ void other_commands(struct command_line *curr_command)
 {
 	// printf("executing other_commands\n");
 
+	last_status = 0;
+
 	int childStatus;
 
 
@@ -165,6 +167,7 @@ void other_commands(struct command_line *curr_command)
 	
 		case -1:
 		perror("fork()\n");
+		last_status = 1;
 		exit(1);
 		break;
 
@@ -180,6 +183,7 @@ void other_commands(struct command_line *curr_command)
 			int sourceFD = open(curr_command->input_file, O_RDONLY);
 			if (sourceFD == -1) { 
 				perror("source open()"); 
+				last_status = 1;
 				exit(1); 
 			}
 
@@ -190,6 +194,7 @@ void other_commands(struct command_line *curr_command)
 			int result = dup2(sourceFD, 0);
 			if (result == -1) { 
 				perror("source dup2()"); 
+				last_status = 2;
 				exit(2); 
 			}
 		}
@@ -200,6 +205,7 @@ void other_commands(struct command_line *curr_command)
 			int targetFD = open(curr_command->output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 			if (targetFD == -1) { 
 				perror("target open()"); 
+				last_status = 1;
 				exit(1); 
 			}
 			
@@ -210,6 +216,7 @@ void other_commands(struct command_line *curr_command)
 			int result = dup2(targetFD, 1);
 			if (result == -1) { 
 				perror("target dup2()"); 
+				last_status = 2;
 				exit(2); 
 			}
 
@@ -267,6 +274,7 @@ void other_commands(struct command_line *curr_command)
 
 		}
 
+		
 		break;
 	} 
 	
