@@ -154,16 +154,14 @@ void other_commands(struct command_line *curr_command)
 {
 	// printf("executing other_commands\n");
 
-	last_status = 0;
-
 	int childStatus;
 
 
 	// Fork a new process
-	pid_t spawnPid = fork();
+	pid_t childPid = fork();
   
 	// both parent and child execute next instruction after fork
-	switch(spawnPid){
+	switch(childPid){
 	
 		case -1:
 		perror("fork()\n");
@@ -182,7 +180,9 @@ void other_commands(struct command_line *curr_command)
 			// Open the source file
 			int sourceFD = open(curr_command->input_file, O_RDONLY);
 			if (sourceFD == -1) { 
-				perror("source open()"); 
+				// perror("source open()"); 
+
+				printf("cannot open %s for input\n", curr_command->input_file);
 				last_status = 1;
 				exit(1); 
 			}
@@ -269,10 +269,19 @@ void other_commands(struct command_line *curr_command)
 		
 		// Wait for child's termination
 		if (!curr_command->is_bg){
-			
-			spawnPid = waitpid(spawnPid, &childStatus, 0);
 
+			childPid = waitpid(childPid, &childStatus, 0);
+			
 		}
+
+		// https://canvas.oregonstate.edu/courses/1987883/pages/exploration-process-api-monitoring-child-processes?module_item_id=24956219
+		if(WIFEXITED(childStatus)){
+			last_status = WEXITSTATUS(childStatus);
+		  } 
+		  
+		else{
+			last_status = WTERMSIG(childStatus);
+		  }
 
 		
 		break;
