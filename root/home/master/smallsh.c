@@ -148,11 +148,12 @@ void status_command(struct command_line *curr_command)
 struct bg_command {
 	pid_t pid;
 	char *command;
+	int status;
 	struct bg_command* next; // pointer to next element in the linked list
 	};
 
 
-struct bg_command* create_bg_command(pid_t pid, char *command) {
+struct bg_command* create_bg_command(pid_t pid, char *command, int status) {
 
 	struct bg_command* curr_bg_command = malloc(sizeof(struct bg_command));
 
@@ -163,6 +164,9 @@ struct bg_command* create_bg_command(pid_t pid, char *command) {
 	curr_bg_command->command = calloc(strlen(command) + 1, sizeof(char));
 	// Copy the value of curr_command into the curr_command in the structure
 	strcpy(curr_bg_command->command, command);
+
+	// Copy the value of pid into the pid in the structure
+	curr_bg_command->status = status;
 
 	// Set the next node to NULL
 	curr_bg_command->next = NULL;
@@ -260,9 +264,9 @@ void other_commands(struct command_line *curr_command)
 
 			printf("background pid is %d\n", childPid);
 
-			new_bg_command = create_bg_command(childPid, curr_command->argv[0]);
+			new_bg_command = create_bg_command(childPid, curr_command->argv[0], childStatus);
 
-			// Add current backgroun command to the linked list
+			// Add current background command to the linked list
 			if(head == NULL){
 				// This is the first element in the linked link
 				// Set the head and the tail to this element
@@ -340,6 +344,38 @@ void other_commands(struct command_line *curr_command)
 	
 }
 
+void bg_command_status(struct bg_command* list)
+{
+
+	 // loop through background commands struct linked list
+	 while(list != NULL){
+
+		// check if bg command finished
+		pid_t finished_bg_command = waitpid(list->pid, list->status, WNOHANG);
+
+		if(){
+
+
+			if(WIFEXITED(childStatus)){
+				last_status = WEXITSTATUS(childStatus);
+			} 
+			
+			else{
+				last_status = WTERMSIG(childStatus);
+			}	
+
+
+
+
+		}
+
+        list = list-> next;
+
+        }
+
+
+}
+
 
 
 
@@ -350,6 +386,9 @@ int main()
 
 	while(true)
 	{
+
+		bg_command_status(head);
+
 		curr_command = parse_input();
 
 		if(curr_command->argc == 0){
