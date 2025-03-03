@@ -149,11 +149,12 @@ struct bg_command {
 	pid_t pid;
 	char *command;
 	int status;
+	bool already_printed;
 	struct bg_command* next; // pointer to next element in the linked list
 	};
 
 
-struct bg_command* create_bg_command(pid_t pid, char *command, int status) {
+struct bg_command* create_bg_command(pid_t pid, char *command, int status, bool already_printed) {
 
 	struct bg_command* curr_bg_command = malloc(sizeof(struct bg_command));
 
@@ -167,6 +168,9 @@ struct bg_command* create_bg_command(pid_t pid, char *command, int status) {
 
 	// Copy the value of pid into the pid in the structure
 	curr_bg_command->status = status;
+
+	// Copy the value of already_printed into the already_printed in the structure
+	curr_bg_command->already_printed = already_printed;
 
 	// Set the next node to NULL
 	curr_bg_command->next = NULL;
@@ -262,9 +266,9 @@ void other_commands(struct command_line *curr_command)
 		
 		if (curr_command->is_bg){
 
-			printf("background pid is %d\n", childPid);
+			printf("background pid is %d\n", getpid());
 
-			new_bg_command = create_bg_command(childPid, curr_command->argv[0], childStatus);
+			new_bg_command = create_bg_command(childPid, curr_command->argv[0], childStatus, false);
 
 			// Add current background command to the linked list
 			if(head == NULL){
@@ -280,7 +284,6 @@ void other_commands(struct command_line *curr_command)
 				tail->next = new_bg_command;
 				tail = new_bg_command;
 			}
-
 			
 			// If the user doesn't redirect the standard input for a background command, then standard input must be redirected to /dev/null.
 			int sourceFD = open("/dev/null", O_RDONLY);
@@ -337,6 +340,7 @@ void other_commands(struct command_line *curr_command)
 			else{
 				last_status = WTERMSIG(childStatus);
 			}	
+
 		}
 		
 		break;
@@ -347,31 +351,34 @@ void other_commands(struct command_line *curr_command)
 void bg_command_status(struct bg_command* list)
 {
 
+	struct bg_command* iList = list; // temp pointer to head of list
+
 	 // loop through background commands struct linked list
-	 while(list != NULL){
+	 while(iList != NULL){
 
 		// check if bg command finished
-		pid_t finished_bg_command = waitpid(list->pid, list->status, WNOHANG);
+		pid_t finished_bg_command = waitpid(iList->pid, &iList->status, WNOHANG);
 
-		if(){
+		if(finished_bg_command > 0 && !iList->already_printed){
 
-
-			if(WIFEXITED(childStatus)){
-				last_status = WEXITSTATUS(childStatus);
+			if(WIFEXITED(iList->status)){
+				last_status = WEXITSTATUS(iList->status);
+				printf("background pid %d is done: exit value %d", iList->pid, last_status);
+				iList->already_printed = true;
 			} 
 			
 			else{
-				last_status = WTERMSIG(childStatus);
+				last_status = WTERMSIG(iList->status);
+				printf("background pid %d is done: terminated by signal %d", iList->pid, last_status);
+				iList->already_printed = true;
 			}	
-
-
-
-
+			
 		}
 
-        list = list-> next;
+		iList = iList-> next;
 
-        }
+
+    }
 
 
 }
