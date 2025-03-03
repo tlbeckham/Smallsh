@@ -144,6 +144,38 @@ void status_command(struct command_line *curr_command)
 }
 
 
+// struct for each background command 
+struct bg_command {
+	pid_t pid;
+	char *command;
+	struct bg_command* next; // pointer to next element in the linked list
+	};
+
+
+struct bg_command* create_bg_command(pid_t pid, char *command) {
+
+	struct bg_command* curr_bg_command = malloc(sizeof(struct bg_command));
+
+	// Copy the value of pid into the pid in the structure
+	curr_bg_command->pid = pid;
+
+	// Allocate memory for curr_command in the structure
+	curr_bg_command->command = calloc(strlen(command) + 1, sizeof(char));
+	// Copy the value of curr_command into the curr_command in the structure
+	strcpy(curr_bg_command->command, command);
+
+	// Set the next node to NULL
+	curr_bg_command->next = NULL;
+	return curr_bg_command;
+}
+
+
+// The head of the linked list
+struct bg_command* head = NULL;
+// The tail of the linked list
+struct bg_command* tail = NULL;
+
+
 /*
  * 
  * Citation:
@@ -156,9 +188,10 @@ void other_commands(struct command_line *curr_command)
 
 	int childStatus;
 
-
 	// Fork a new process
 	pid_t childPid = fork();
+
+	struct bg_command* new_bg_command;
   
 	// both parent and child execute next instruction after fork
 	switch(childPid){
@@ -225,7 +258,25 @@ void other_commands(struct command_line *curr_command)
 		
 		if (curr_command->is_bg){
 
-			printf("background pid is %d\n", getpid());
+			printf("background pid is %d\n", childPid);
+
+			new_bg_command = create_bg_command(childPid, curr_command->argv[0]);
+
+			// Add current backgroun command to the linked list
+			if(head == NULL){
+				// This is the first element in the linked link
+				// Set the head and the tail to this element
+				head = new_bg_command;
+				tail = new_bg_command;
+			} 
+
+			else{
+				// This is not the first element. 
+				// Add this element to the list and advance the tail
+				tail->next = new_bg_command;
+				tail = new_bg_command;
+			}
+
 			
 			// If the user doesn't redirect the standard input for a background command, then standard input must be redirected to /dev/null.
 			int sourceFD = open("/dev/null", O_RDONLY);
@@ -260,7 +311,8 @@ void other_commands(struct command_line *curr_command)
 		execvp(curr_command->argv[0], curr_command->argv);
 		
 		// exec only returns if there is an error
-		perror("execvp");
+		//perror("execvp");
+		printf("%s: no such file or directory\n", curr_command->argv[0]);
 		exit(2);
 		break;
 		
@@ -271,23 +323,23 @@ void other_commands(struct command_line *curr_command)
 		if (!curr_command->is_bg){
 
 			childPid = waitpid(childPid, &childStatus, 0);
+
+
+			// https://canvas.oregonstate.edu/courses/1987883/pages/exploration-process-api-monitoring-child-processes?module_item_id=24956219
+			if(WIFEXITED(childStatus)){
+				last_status = WEXITSTATUS(childStatus);
+			} 
 			
+			else{
+				last_status = WTERMSIG(childStatus);
+			}	
 		}
-
-		// https://canvas.oregonstate.edu/courses/1987883/pages/exploration-process-api-monitoring-child-processes?module_item_id=24956219
-		if(WIFEXITED(childStatus)){
-			last_status = WEXITSTATUS(childStatus);
-		  } 
-		  
-		else{
-			last_status = WTERMSIG(childStatus);
-		  }
-
 		
 		break;
 	} 
 	
 }
+
 
 
 
