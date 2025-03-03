@@ -49,14 +49,8 @@ struct command_line *parse_input()
 		return curr_command;
 	}
 
-
 	// Tokenize the input
 	char *token = strtok(input, " \n");
-
-	// if(token[0] && !strcmp(token,"#")){
-	// 	curr_command->argc = 0;
-	// 	return curr_command;
-	// }
 
 	while(token){
 		if(!strcmp(token,"<")){
@@ -71,21 +65,6 @@ struct command_line *parse_input()
 		token=strtok(NULL," \n");
 	}
 
-	// If line begins with blank line or comment, it will be ignored and the shell will reprompt
-	// if(strcmp(curr_command->argv[0], "#")){
-	// 	curr_command = NULL;
-	// }
-
-	// if(strcmp(token[0], "#")){
-	// 	curr_command = NULL;
-	// }
-
-	// if(curr_command->argc == 0){
-	// 	curr_command);
-	// 	return NULL;
-	// }
-
-	//else{
 		return curr_command;
 	
 }
@@ -211,8 +190,6 @@ void other_commands(struct command_line *curr_command)
 		break;
 
 	case 0:
-		// The child process executes this branch
-		// printf("CHILD(%d) running command\n", getpid());
 
 		// Source URL: Redirecting both Stdin and Stdout https://canvas.oregonstate.edu/courses/1987883/pages/exploration-processes-and-i-slash-o?module_item_id=24956228
 
@@ -227,9 +204,6 @@ void other_commands(struct command_line *curr_command)
 				last_status = 1;
 				exit(1); 
 			}
-
-			// Write the file descriptor to stdout
-			// printf("File descriptor of input file = %d\n", sourceFD); 
 		
 			// Redirect stdin to source file
 			int result = dup2(sourceFD, 0);
@@ -249,9 +223,6 @@ void other_commands(struct command_line *curr_command)
 				last_status = 1;
 				exit(1); 
 			}
-			
-			// Write the file descriptor to stdout
-			// printf("File descriptor of output file = %d\n", targetFD);
 
 			// Redirect stdout to target file
 			int result = dup2(targetFD, 1);
@@ -265,25 +236,6 @@ void other_commands(struct command_line *curr_command)
 
 		
 		if (curr_command->is_bg){
-
-			printf("background pid is %d\n", getpid());
-
-			new_bg_command = create_bg_command(childPid, curr_command->argv[0], childStatus, false);
-
-			// Add current background command to the linked list
-			if(head == NULL){
-				// This is the first element in the linked link
-				// Set the head and the tail to this element
-				head = new_bg_command;
-				tail = new_bg_command;
-			} 
-
-			else{
-				// This is not the first element. 
-				// Add this element to the list and advance the tail
-				tail->next = new_bg_command;
-				tail = new_bg_command;
-			}
 			
 			// If the user doesn't redirect the standard input for a background command, then standard input must be redirected to /dev/null.
 			int sourceFD = open("/dev/null", O_RDONLY);
@@ -298,7 +250,6 @@ void other_commands(struct command_line *curr_command)
 				exit(2); 
 			}
 
-
 			// If the user doesn't redirect the standard output for a background command, then standard output must be redirected to /dev/null.
 			int targetFD = open("/dev/null", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 			if (targetFD == -1) { 
@@ -311,14 +262,11 @@ void other_commands(struct command_line *curr_command)
 				perror("target dup2()"); 
 				exit(2); 
 			}
-
-
 		}
 
 		execvp(curr_command->argv[0], curr_command->argv);
 		
 		// exec only returns if there is an error
-		//perror("execvp");
 		printf("%s: no such file or directory\n", curr_command->argv[0]);
 		exit(2);
 		break;
@@ -342,6 +290,28 @@ void other_commands(struct command_line *curr_command)
 			}	
 
 		}
+
+		else if (curr_command->is_bg){
+
+			printf("background pid is %d\n", childPid);
+
+			new_bg_command = create_bg_command(childPid, curr_command->argv[0], childStatus, false);
+
+			// Add current background command to the linked list
+			if(head == NULL){
+				// This is the first element in the linked link
+				// Set the head and the tail to this element
+				head = new_bg_command;
+				tail = new_bg_command;
+			} 
+
+			else{
+				// This is not the first element. 
+				// Add this element to the list and advance the tail
+				tail->next = new_bg_command;
+				tail = new_bg_command;
+			}
+		}
 		
 		break;
 	} 
@@ -363,33 +333,27 @@ void bg_command_status(struct bg_command* list)
 
 			if(WIFEXITED(iList->status)){
 				last_status = WEXITSTATUS(iList->status);
-				printf("background pid %d is done: exit value %d", iList->pid, last_status);
+				printf("background pid %d is done: exit value %d\n", iList->pid, last_status);
 				iList->already_printed = true;
 			} 
 			
 			else{
 				last_status = WTERMSIG(iList->status);
-				printf("background pid %d is done: terminated by signal %d", iList->pid, last_status);
+				printf("background pid %d is done: terminated by signal %d\n", iList->pid, last_status);
 				iList->already_printed = true;
 			}	
 			
 		}
 
 		iList = iList-> next;
-
-
     }
 
-
 }
-
-
 
 
 int main()
 {
 	struct command_line *curr_command;
-
 
 	while(true)
 	{
@@ -424,3 +388,4 @@ int main()
 	}
 	return EXIT_SUCCESS;
 }
+
